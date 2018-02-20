@@ -1,0 +1,6 @@
+Bob has a dog named Fido.
+Mary has a dog.
+Mary's dog's name is Rover.
+Joe has a cat.
+Joe's cat's name is Mr. Binglesworth.
+Chris has a cat named Whisker Biscuit. That's a silly name.

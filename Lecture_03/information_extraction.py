@@ -5,7 +5,7 @@ import spacy
 from pyclausie import ClausIE
 
 
-nlp = spacy.load('en')
+nlp = spacy.load('en_core_web_sm')
 re_spaces = re.compile(r'\s+')
 
 
@@ -28,6 +28,9 @@ class Person(object):
         self.has = [] if has is None else has
         self.travels = [] if travels is None else travels
 
+    def __repr__(self):
+        return self.name
+
 
 class Pet(object):
     def __init__(self, pet_type, name=None):
@@ -49,7 +52,7 @@ trips = []
 def get_data_from_file(file_path='./chatbot_data.txt'):
     with open(file_path) as infile:
         cleaned_lines = [line.strip() for line in infile if not line.startswith(('$$$', '###', '==='))]
-
+    cleaned_lines = [t for t in cleaned_lines if t!='']
     return cleaned_lines
 
 
@@ -72,9 +75,9 @@ def add_person(name):
 
 
 def select_pet(name):
-    for person in persons:
-        if person.name == name:
-            return person
+    for pet in pets:
+        if pet.name == name:
+            return pet
 
 
 def add_pet(type, name=None):
@@ -102,6 +105,8 @@ def get_persons_pet(person_name):
 
 def process_relation_triplet(triplet):
     """
+    Process a relation triplet found by ClausIE and store the data
+
     find relations of types:
     (PERSON, likes, PERSON)
     (PERSON, has, PET)
@@ -119,7 +124,7 @@ def process_relation_triplet(triplet):
     sentence = triplet.subject + ' ' + triplet.predicate + ' ' + triplet.object
 
     doc = nlp(unicode(sentence))
-
+    root = True
     for t in doc:
         if t.pos_ == 'VERB' and t.head == t:
             root = t
@@ -150,6 +155,7 @@ def process_relation_triplet(triplet):
         fw_doc = nlp(unicode(triplet.object))
         with_token = [t for t in fw_doc if t.text == 'with'][0]
         fw_who = [t for t in with_token.children if t.dep_ == 'pobj'][0].text
+        # fw_who = [e for e in fw_doc.ents if e.label_ == 'PERSON'][0].text
 
         if triplet.subject in [e.text for e in doc.ents if e.label_ == 'PERSON'] and fw_who in [e.text for e in doc.ents if e.label_ == 'PERSON']:
             s = add_person(triplet.subject)
@@ -213,7 +219,7 @@ def main():
 
     for t in triples:
         r = process_relation_triplet(t)
-        print(r)
+        # print(r)
 
     question = ' '
     while question[-1] != '?':
@@ -237,4 +243,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -1,0 +1,9 @@
+Joe likes Mary. 1 
+Bob is friends with Mary. 1
+Bob doesn't like Joe.  1
+Joe is friends with Mary. 1
+Sally and Mary are friends.
+Sally likes Joe. 1 
+Joe doesn't really like Sally. 1 
+Chris is friends with Bob, Joe, and Mary. 1
+Rover is friends with Fido.
