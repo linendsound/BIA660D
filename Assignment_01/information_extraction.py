@@ -51,7 +51,7 @@ pets = []
 trips = []
 
 
-def get_data_from_file(file_path='./assignment_01.data'):
+def process_data_from_input_file(file_path='./assignment_01.data'):
     with open(file_path) as infile:
         cleaned_lines = [line.strip() for line in infile if (not line.startswith(('$$$', '###', '==='))) and line!='']
 
@@ -280,7 +280,7 @@ def has_question_word(string):
 
 
 def answer_question(question_string = None):
-    sents = get_data_from_file()
+    sents = process_data_from_input_file()
 
     global KNOWN_NAMES
     KNOWN_NAMES    = {'Joe','Mary','Bob','Sally','Chris'}
@@ -297,6 +297,7 @@ def answer_question(question_string = None):
 
 
         print('This is not a question... please try again')
+        return
     try:
         q_trip = cl.extract_triples([preprocess_question(question)])[0]
         q_sentence = q_trip.subject + ' ' + q_trip.predicate + ' ' + q_trip.object
@@ -316,7 +317,7 @@ def answer_question(question_string = None):
                 print(answer.format(person.name, q_trip.object, pet.name))
 
     #2)     (Who is [going to|flying to|traveling to|visiting] <place>?)
-    if 'who' in q_trip.subject.lower() and True in [a in q_trip.predicate for a in ['going','flying','traveling','visiting']] and 'GPE' in [token.ent_type_ for token in q_doc] :
+    elif 'who' in q_trip.subject.lower() and True in [a in q_trip.predicate for a in ['going','flying','traveling','visiting']] and 'GPE' in [token.ent_type_ for token in q_doc] :
         answer = '{} is going to {}.'
         obj_doc = q_doc.char_span(q_sentence.find(q_trip.object), len(q_sentence))
 
@@ -335,7 +336,7 @@ def answer_question(question_string = None):
 
 
     #3)     (Does <person> like <person>?)
-    if 'does' in q_trip.subject.lower() and 'like' in q_trip.predicate and q_trip.object in [e.text for e in q_doc.ents if e.label_ == 'PERSON']:
+    elif 'does' in q_trip.subject.lower() and 'like' in q_trip.predicate and q_trip.object in [e.text for e in q_doc.ents if e.label_ == 'PERSON']:
 
         subj_start = q_sentence.find(q_trip.subject)
         subj_doc = q_doc.char_span(subj_start, subj_start + len(q_trip.subject))
@@ -348,7 +349,7 @@ def answer_question(question_string = None):
 
 
     #4)    (What's the name of <person>'s <pet_type>?)
-    if 'what' in [q.text.lower() for q in q_doc] and 'name' in [q.text.lower() for q in q_doc] and 'PERSON' in [token.ent_type_ for token in q_doc]:
+    elif 'what' in [q.text.lower() for q in q_doc] and 'name' in [q.text.lower() for q in q_doc] and 'PERSON' in [token.ent_type_ for token in q_doc]:
 
         s_people = select_person([token.text for token in q_doc if token.ent_type_ == 'PERSON'][0])
         # for chunks in q_doc.noun_chunks:
@@ -369,7 +370,7 @@ def answer_question(question_string = None):
 
 
     #5)     ( When is <person> [going to|flying to|traveling to|visiting] <place>?)
-    if 'when' in q_trip.object.lower() and True in [a in q_trip.predicate for a in['going', 'flying', 'traveling', 'visiting']] and 'GPE' in [token.ent_type_ for token in q_doc]:
+    elif 'when' in q_trip.object.lower() and True in [a in q_trip.predicate for a in['going', 'flying', 'traveling', 'visiting']] and 'GPE' in [token.ent_type_ for token in q_doc]:
         obj_doc = q_doc.char_span(q_sentence.find(q_trip.object), len(q_sentence))
         place = [token.text for token in obj_doc if token.ent_type_ == 'GPE'][0]
         o_people = select_person(q_trip.subject)
@@ -384,16 +385,18 @@ def answer_question(question_string = None):
 
 
     #6)    (Who likes <person>?)
-    if 'who' in q_trip.subject.lower() and 'likes' in q_trip.predicate and q_trip.object in [e.text for e in q_doc.ents if e.label_ == 'PERSON']:
+    elif 'who' in q_trip.subject.lower() and 'likes' in q_trip.predicate and q_trip.object in [e.text for e in q_doc.ents if e.label_ == 'PERSON']:
         o_people = select_person(q_trip.object)
         for p in persons:
             if o_people in p.likes:
                 print (p.name ,'likes', o_people.name)
     #7)     (Who does <person> like?)
-    if 'who' in q_trip.object.lower() and 'like' in q_trip.predicate and q_trip.subject in [e.text for e in q_doc.ents if e.label_ == 'PERSON']:
+    elif 'who' in q_trip.object.lower() and 'like' in q_trip.predicate and q_trip.subject in [e.text for e in q_doc.ents if e.label_ == 'PERSON']:
         s_people = select_person(q_trip.subject)
         for p in s_people.likes:
             print (s_people.name,'likes',p.name)
+    else:
+        print("I don't know.")
 
 
 
